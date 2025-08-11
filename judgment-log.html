@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>登校判断の履歴（過去14日間）</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f1f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      color: #1677c1;
+      margin-bottom: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #e8f4fc;
+      color: #333;
+    }
+    tr:hover {
+      background-color: #f5fbff;
+    }
+    .back {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back a {
+      text-decoration: none;
+      background-color: #1677c1;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+    .popup-icon {
+      cursor: pointer;
+      color: #1677c1;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>登校判断の履歴（過去14日間）</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>登校判断</th>
+          <th>給食</th>
+          <th>備考</th>
+        </tr>
+      </thead>
+      <tbody id="judgment-log">
+        <tr><td colspan="4">読み込み中...</td></tr>
+      </tbody>
+    </table>
+    <div class="back">
+      <a href="?page=index">← メイン画面へ戻る</a>
+    </div>
+  </div>
+
+  <script>
+    // 仮のデータ（実際はGASなどから取得予定）
+    const data = [
+      {
+        date: '2025/07/25',
+        judgment: '自宅待機',
+        lunch: 'なし',
+        reason: '午前7時の時点で警報が発令中だったため。',
+        note: '—'
+      },
+      {
+        date: '2025/07/24',
+        judgment: '集団登校',
+        lunch: 'あり',
+        reason: '6:30〜6:55に警報が出ており、7時時点で解除されたため。',
+        note: '—'
+      },
+      {
+        date: '2025/07/23',
+        judgment: '集団登校',
+        lunch: 'あり',
+        reason: '',
+        note: '—'
+      }
+    ];
+
+    const tbody = document.getElementById('judgment-log');
+    tbody.innerHTML = '';
+
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      const icon = row.reason
+        ? ` <i class="fas fa-comment-dots popup-icon" onclick="alert('${row.reason.replace(/'/g, "\\'")}')"></i>`
+        : '';
+      tr.innerHTML = `
+        <td>${row.date}</td>
+        <td>${row.judgment}${icon}</td>
+        <td>${row.lunch}</td>
+        <td>${row.note || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
