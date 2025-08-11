@@ -9,7 +9,7 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f1f6f9;
-      margin: 0;
+      margin: 0 0 60px 0; /* 下に固定ボタンのスペース確保 */
       padding: 20px;
     }
     .card {
@@ -34,6 +34,7 @@
       padding: 10px;
       border-bottom: 1px solid #ddd;
       text-align: center;
+      word-break: break-word;
     }
     th {
       background-color: #e8f4fc;
@@ -42,16 +43,34 @@
     tr:hover {
       background-color: #f5fbff;
     }
+    /* 固定ボタン */
     .back {
-      margin-top: 20px;
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
       text-align: center;
+      width: 90%;
+      max-width: 700px;
+      z-index: 100;
     }
     .back a {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 700px;
+      box-sizing: border-box;
       text-decoration: none;
       background-color: #1677c1;
       color: white;
       padding: 10px 20px;
       border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 3px 6px rgba(22, 119, 193, 0.4);
+      transition: background-color 0.3s ease;
+    }
+    .back a:hover {
+      background-color: #125a93;
     }
     .popup-icon {
       cursor: pointer;
@@ -76,53 +95,71 @@
         <tr><td colspan="4">読み込み中...</td></tr>
       </tbody>
     </table>
-    <div class="back">
-      <a href="?page=index">← メイン画面へ戻る</a>
-    </div>
+  </div>
+
+  <div class="back">
+    <a href="index.html">メイン画面へ戻る</a>
   </div>
 
   <script>
-    // 仮のデータ（実際はGASなどから取得予定）
-    const data = [
-      {
-        date: '2025/07/25',
-        judgment: '自宅待機',
-        lunch: 'なし',
-        reason: '午前7時の時点で警報が発令中だったため。',
-        note: '—'
-      },
-      {
-        date: '2025/07/24',
-        judgment: '集団登校',
-        lunch: 'あり',
-        reason: '6:30〜6:55に警報が出ており、7時時点で解除されたため。',
-        note: '—'
-      },
-      {
-        date: '2025/07/23',
-        judgment: '集団登校',
-        lunch: 'あり',
-        reason: '',
-        note: '—'
+    function jsonpCallback(data) {
+      console.log('登校判断ログ JSONPデータ:', data);
+
+      const tbody = document.getElementById('judgment-log');
+      tbody.innerHTML = '';
+
+      if (!data || data.error) {
+        tbody.innerHTML = `<tr><td colspan="4">データ取得エラー</td></tr>`;
+        return;
       }
-    ];
 
-    const tbody = document.getElementById('judgment-log');
-    tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4">データなし</td></tr>`;
+        return;
+      }
 
-    data.forEach(row => {
-      const tr = document.createElement('tr');
-      const icon = row.reason
-        ? ` <i class="fas fa-comment-dots popup-icon" onclick="alert('${row.reason.replace(/'/g, "\\'")}')"></i>`
-        : '';
-      tr.innerHTML = `
-        <td>${row.date}</td>
-        <td>${row.judgment}${icon}</td>
-        <td>${row.lunch}</td>
-        <td>${row.note || '—'}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+      // 日付で降順ソート（新しい順）
+      data.sort((a, b) => {
+        // 日付文字列をDateオブジェクトに変換
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // 降順
+      });
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+
+        const remarkCell = row.remark || '－';
+
+        let judgmentCell = row.judgment || '－';
+        if (row.reason && row.reason.trim()) {
+          judgmentCell += ` <i class="fas fa-comment-dots popup-icon" title="理由" onclick="alert('${row.reason.replace(/'/g, "\\'")}')"></i>`;
+        }
+
+        tr.innerHTML = `
+          <td>${row.date || '－'}</td>
+          <td>${judgmentCell}</td>
+          <td>${row.lunch || '－'}</td>
+          <td>${remarkCell}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadJudgmentLog() {
+      const apiUrl = 'https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=judgment-log&callback=jsonpCallback';
+
+      const oldScript = document.getElementById('jsonpScript');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.src = apiUrl;
+      script.id = 'jsonpScript';
+      document.body.appendChild(script);
+    }
+
+    window.onload = loadJudgmentLog;
   </script>
 </body>
 </html>
