@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登校判断</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f1f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      width: 90%;
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      color: #1677c1;
+      margin-bottom: 8px;
+    }
+    .datetime {
+      text-align: center;
+      color: #555;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      background-color: #f5faff;
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 10px;
+    }
+    .row i {
+      font-size: 1.2rem;
+      margin-right: 12px;
+      color: #1677c1;
+      width: 28px;
+      text-align: center;
+    }
+    .row label {
+      font-weight: bold;
+      flex: 1;
+      font-size: 1rem;
+    }
+    .row span {
+      color: #333;
+      font-size: 1rem;
+    }
+    .rules {
+      background-color: #e8f7ff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #444;
+      margin-top: 16px;
+    }
+    .rules i {
+      margin-right: 6px;
+      color: #1677c1;
+    }
+    .reload {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .reload button {
+      background-color: #1677c1;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .footer-remark {
+      margin-top: 30px;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: center;
+    }
+    .log-links {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    .log-links a {
+      color: #1677c1;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .card {
+        width: 95%;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .row label,
+      .row span {
+        font-size: 1.1rem;
+      }
+      .row i {
+        font-size: 1.4rem;
+        width: 24px;
+      }
+      .rules {
+        font-size: 0.9rem;
+        padding: 10px;
+      }
+      .reload button {
+        font-size: 1.1rem;
+        padding: 12px 24px;
+      }
+      .footer-remark {
+        font-size: 0.7rem;
+      }
+      .log-links {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+</head>
+<body>
+  <div class="card">
+    <h1>登校判断</h1>
+    <div class="datetime" id="datetime">2025/07/26 07:00 時点</div>
+
+    <div class="row">
+      <i class="fas fa-exclamation-triangle"></i>
+      <label>発令中の警報</label>
+      <span id="alerts">読み込み中...</span>
+    </div>
+    <div class="row">
+      <i class="fas fa-school"></i>
+      <label>登校判断</label>
+      <span id="judgment">読み込み中...</span>
+    </div>
+    <div class="row">
+      <i class="fas fa-utensils"></i>
+      <label>給食</label>
+      <span id="lunch">読み込み中...</span>
+    </div>
+    <div class="row">
+      <i class="fas fa-comment-dots"></i>
+      <label>備考</label>
+      <span id="remark">読み込み中...</span>
+    </div>
+
+    <div class="rules">
+      <i class="fas fa-info-circle"></i><strong>登校判断ルール</strong><br>
+      ・7:00時点で警報 → 自宅待機（給食なし）<br>
+      ・7:00時点で解除 → 集団登校（給食あり・遅刻扱いなし）<br>
+      ・7:00〜9:00に解除 → 集団登校（給食なし・12時下校・遅刻扱いなし）<br>
+      ・9:00時点でも継続 → 臨時休校<br>
+      ・登校中（7:30〜8:30ごろ）に発令 → 自宅付近なら待機、それ以外は登校
+    </div>
+
+    <div class="reload">
+      <button onclick="reloadData()">再読み込み</button>
+    </div>
+
+    <div class="log-links">
+      <a href="?page=judgment-log">登校判断の履歴</a>
+      <a href="?page=alert-log">警報の履歴</a>
+    </div>
+
+    <div class="footer-remark">
+      ※ 長期休暇中（夏休みなど）も通知や登校判断が行われる場合があります。
+    </div>
+  </div>
+
+  <script>
+    function updateUI(data) {
+      console.log('Received data:', data);
+
+      if (!data || (!data.alert && !data.judgment)) {
+        document.getElementById('datetime').innerText = '本日のデータなし';
+        document.getElementById('alerts').innerText = '－';
+        document.getElementById('judgment').innerText = '－';
+        document.getElementById('lunch').innerText = '－';
+        document.getElementById('remark').innerText = '－';
+        return;
+      }
+
+      document.getElementById('datetime').innerText = data.datetime || '不明な日時';
+      document.getElementById('alerts').innerText = data.alert ? data.alert.types : '－';
+
+      if (data.judgment) {
+        document.getElementById('judgment').innerText = data.judgment.judgment;
+        document.getElementById('lunch').innerText = data.judgment.lunch;
+        document.getElementById('remark').innerText = data.judgment.remark;
+      } else {
+        document.getElementById('judgment').innerText = '－';
+        document.getElementById('lunch').innerText = '－';
+        document.getElementById('remark').innerText = '－';
+      }
+    }
+
+    function reloadData() {
+      document.getElementById('datetime').innerText = '読み込み中...';
+      document.getElementById('alerts').innerText = '読み込み中...';
+      document.getElementById('judgment').innerText = '読み込み中...';
+      document.getElementById('lunch').innerText = '読み込み中...';
+      document.getElementById('remark').innerText = '読み込み中...';
+
+      google.script.run
+        .withSuccessHandler(updateUI)
+        .withFailureHandler(function(err) {
+          console.error('Error from GAS:', err);
+          document.getElementById('datetime').innerText = 'データ取得エラー';
+          document.getElementById('alerts').innerText = '－';
+          document.getElementById('judgment').innerText = '－';
+          document.getElementById('lunch').innerText = '－';
+          document.getElementById('remark').innerText = '－';
+        })
+        .getTodayData();
+    }
+
+    window.onload = reloadData;
+  </script>
+
+</body>
+</html>
