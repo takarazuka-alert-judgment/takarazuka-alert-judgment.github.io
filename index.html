@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>登校判断</title>
+  <title>宝塚小学校 登校判断アプリ</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -84,7 +84,7 @@
       margin-top: 30px;
       font-size: 0.75rem;
       color: #888;
-      text-align: center;
+      text-align: left;
     }
     .log-links {
       text-align: center;
@@ -140,7 +140,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>登校判断</h1>
+    <h1>宝塚小学校 登校判断</h1>
     <div class="datetime" id="datetime">2025/07/26 07:00 時点</div>
 
     <div class="row">
@@ -178,19 +178,20 @@
     </div>
 
     <div class="log-links">
-      <a href="?page=judgment-log">登校判断の履歴</a>
-      <a href="?page=alert-log">警報の履歴</a>
+      <a href="judgment-log.html">登校判断の履歴</a>
+      <a href="alert-log.html">警報の履歴</a>
     </div>
 
     <div class="footer-remark">
-      ※ 長期休暇中（夏休みなど）も通知や登校判断が行われる場合があります。
+      ※ 夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。<br>
+      ※ 本システムは参考情報を提供するものであり、最終判断は各ご家庭でお願いします。
     </div>
   </div>
 
   <script>
     function updateUI(data) {
-      console.log('Received data:', data);
-
+      console.log('updateUI called with:', data);
+  
       if (!data || (!data.alert && !data.judgment)) {
         document.getElementById('datetime').innerText = '本日のデータなし';
         document.getElementById('alerts').innerText = '－';
@@ -199,10 +200,10 @@
         document.getElementById('remark').innerText = '－';
         return;
       }
-
+  
       document.getElementById('datetime').innerText = data.datetime || '不明な日時';
       document.getElementById('alerts').innerText = data.alert ? data.alert.types : '－';
-
+  
       if (data.judgment) {
         document.getElementById('judgment').innerText = data.judgment.judgment;
         document.getElementById('lunch').innerText = data.judgment.lunch;
@@ -213,27 +214,30 @@
         document.getElementById('remark').innerText = '－';
       }
     }
-
+  
+    function jsonpCallback(data) {
+      console.log('JSONP callback data:', data);
+      updateUI(data);
+    }
+  
     function reloadData() {
       document.getElementById('datetime').innerText = '読み込み中...';
       document.getElementById('alerts').innerText = '読み込み中...';
       document.getElementById('judgment').innerText = '読み込み中...';
       document.getElementById('lunch').innerText = '読み込み中...';
       document.getElementById('remark').innerText = '読み込み中...';
-
-      google.script.run
-        .withSuccessHandler(updateUI)
-        .withFailureHandler(function(err) {
-          console.error('Error from GAS:', err);
-          document.getElementById('datetime').innerText = 'データ取得エラー';
-          document.getElementById('alerts').innerText = '－';
-          document.getElementById('judgment').innerText = '－';
-          document.getElementById('lunch').innerText = '－';
-          document.getElementById('remark').innerText = '－';
-        })
-        .getTodayData();
+  
+      const apiUrl = "https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=today-data&callback=jsonpCallback";
+  
+      const oldScript = document.getElementById('jsonpScript');
+      if (oldScript) oldScript.remove();
+  
+      const script = document.createElement('script');
+      script.src = apiUrl;
+      script.id = 'jsonpScript';
+      document.body.appendChild(script);
     }
-
+  
     window.onload = reloadData;
   </script>
 
