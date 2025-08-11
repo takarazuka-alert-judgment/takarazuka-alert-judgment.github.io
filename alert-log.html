@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>警報の履歴（過去14日間）</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f1f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      color: #1677c1;
+      margin-bottom: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #e8f4fc;
+      color: #333;
+    }
+    tr:hover {
+      background-color: #f5fbff;
+    }
+    .back {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back a {
+      text-decoration: none;
+      background-color: #1677c1;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>警報の履歴（過去14日間）</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>時刻</th>
+          <th>発令状況</th>
+          <th>警報の種類</th>
+        </tr>
+      </thead>
+      <tbody id="alert-log">
+        <tr>
+          <td>2025/07/25</td>
+          <td>07:00</td>
+          <td>発令中</td>
+          <td>大雨警報、洪水警報</td>
+        </tr>
+        <tr>
+          <td>2025/07/24</td>
+          <td>07:00</td>
+          <td>解除済</td>
+          <td>暴風警報</td>
+        </tr>
+        <tr>
+          <td>2025/07/23</td>
+          <td>07:00</td>
+          <td>発令なし</td>
+          <td>―</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="back">
+      <a href="?page=index">← メイン画面へ戻る</a>
+    </div>
+  </div>
+</body>
+</html>
