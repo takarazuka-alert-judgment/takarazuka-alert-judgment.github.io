@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>宝塚小学校 登校判断アプリ</title>
   <style>
-    /* 全体のボックスサイズをborder-boxにしてサイズ計算を安定化 */
     *,
     *::before,
     *::after {
@@ -16,55 +15,61 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #fff;
       margin: 0;
-      padding-left: 20px;
-      padding-right: 20px;
-      padding-top: 20px;
-      padding-bottom: 20px;
+      padding: 5px 10px 70px; /* 上部5px・下部70pxは固定 */
     }
+
     .card {
       max-width: 700px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 20px;
       background: white;
       border-radius: 0;
       box-shadow: none;
       width: 100%;
     }
+
     h1 {
       text-align: center;
       color: #1677c1;
+      margin-top: 8px;    /* 追加 */
       margin-bottom: 8px;
     }
+
     .datetime {
       text-align: center;
       color: #555;
       font-size: 0.9rem;
       margin-bottom: 20px;
     }
+
     .row {
       display: flex;
       align-items: center;
       background-color: #f5faff;
       border-radius: 10px;
-      padding: 10px 16px;
+      padding: 10px 12px;
       margin-bottom: 10px;
     }
+
     .row i {
       font-size: 1.2rem;
-      margin-right: 12px;
+      margin-right: 10px;
       color: #1677c1;
       width: 28px;
       text-align: center;
     }
+
     .row label {
       font-weight: bold;
       flex: 1;
       font-size: 1rem;
     }
+
     .row span {
       color: #333;
       font-size: 1rem;
     }
+
     /* アコーディオン */
     .accordion {
       margin-top: 16px;
@@ -72,6 +77,7 @@
       overflow: hidden;
       border: 1px solid #cce7ff;
     }
+
     .accordion-header {
       background-color: #e8f7ff;
       color: #1677c1;
@@ -82,60 +88,77 @@
       align-items: center;
       justify-content: space-between;
     }
+
     .accordion-header i {
       margin-right: 6px;
     }
+
     .accordion-content {
       background-color: #f9fdff;
-      padding: 0 12px;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
+      padding: 12px;
       font-size: 0.85rem;
       color: #444;
+      display: none;
     }
+
     .accordion-content.open {
-      padding: 12px;
+      display: block;
     }
-    .reload {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .reload button {
-      background-color: #1677c1;
-      color: white;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+
     .footer-remark {
       margin-top: 30px;
       font-size: 0.75rem;
       color: #888;
       text-align: left;
     }
-    .log-links {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.9rem;
+
+    /* 下部固定ナビ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 700px;
+      background: #1677c1;
+      border-radius: 0; /* 角丸をなくす */
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0;
+      box-sizing: border-box;
+      z-index: 1000;
+      border-top: none;
     }
-    .log-links a {
-      color: #1677c1;
+    .bottom-nav a {
+      color: #fff;
       text-decoration: none;
-      margin: 0 10px;
+      font-size: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 60px;
+      user-select: none;
+      transition: color 0.2s ease;
     }
+    .bottom-nav a:hover {
+      color: #a9d1ff;
+    }
+    .bottom-nav a span {
+      font-size: 0.65rem; /* 小さく */
+      margin-top: 4px;
+    }
+    .bottom-nav a.line-icon {
+      color: #fff;
+    }
+
     @media screen and (max-width: 680px) {
       body {
-        padding-left: 10px;
-        padding-right: 10px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding: 5px 10px 70px; /* モバイルも上部5pxに */
       }
       .card {
         width: 100%;
-        padding: 16px;
+        padding: 14px;
       }
       h1 {
         font-size: 1.6rem;
@@ -151,19 +174,15 @@
       .accordion-content {
         font-size: 0.9rem;
       }
-      .reload button {
-        font-size: 1.1rem;
-        padding: 12px 24px;
+      .bottom-nav a {
+        font-size: 22px;
+        width: 50px;
       }
-      .footer-remark {
-        font-size: 0.7rem;
-      }
-      .log-links {
-        font-size: 0.85rem;
+      .bottom-nav a span {
+        font-size: 0.6rem; /* モバイルではさらに小さく */
       }
     }
   </style>
-  <!-- Font Awesome -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -215,19 +234,30 @@
       </div>
     </div>
 
-    <div class="reload">
-      <button onclick="reloadData()">再読み込み</button>
-    </div>
-
-    <div class="log-links">
-      <a href="judgment-log.html">登校判断の履歴</a>
-      <a href="alert-log.html">警報の履歴</a>
-    </div>
-
     <div class="footer-remark">
       ※ 本システムは参考情報を提供するものであり、最終判断は各ご家庭でお願いします。夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。
     </div>
   </div>
+
+  <!-- 下部固定ナビ -->
+  <nav class="bottom-nav" aria-label="ページ下部ナビゲーション">
+    <a href="javascript:reloadData()" title="ホーム">
+      <i class="fas fa-home"></i>
+      <span>ホーム</span>
+    </a>
+    <a href="judgment-log.html" title="登校判断履歴">
+      <i class="fas fa-school"></i>
+      <span>判断履歴</span>
+    </a>
+    <a href="alert-log.html" title="警報履歴">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>警報履歴</span>
+    </a>
+    <a href="https://line.me/R/ti/p/@098cxpyz" target="_blank" rel="noopener" class="line-icon" title="LINE公式アカウント">
+      <i class="fab fa-line"></i>
+      <span>LINE</span>
+    </a>
+  </nav>
 
   <script>
     function updateUI(data) {
@@ -254,9 +284,11 @@
         document.getElementById('remark').innerText = '－';
       }
     }
+
     function jsonpCallback(data) {
       updateUI(data);
     }
+
     function reloadData() {
       document.getElementById('datetime').innerText = '読み込み中...';
       document.getElementById('alerts').innerText = '読み込み中...';
@@ -264,7 +296,7 @@
       document.getElementById('reason').innerText = '読み込み中...';
       document.getElementById('lunch').innerText = '読み込み中...';
       document.getElementById('remark').innerText = '読み込み中...';
-      const apiUrl = "https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=today-data&callback=jsonpCallback";
+      const apiUrl = "https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=home&callback=jsonpCallback";
       const oldScript = document.getElementById('jsonpScript');
       if (oldScript) oldScript.remove();
       const script = document.createElement('script');
@@ -272,17 +304,16 @@
       script.id = 'jsonpScript';
       document.body.appendChild(script);
     }
+
     window.onload = reloadData;
 
     function toggleAccordion() {
       const content = document.getElementById('accordion-content');
       const icon = document.getElementById('accordion-icon');
-      if (content.style.maxHeight) {
-        content.style.maxHeight = null;
+      if (content.classList.contains('open')) {
         content.classList.remove('open');
         icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
       } else {
-        content.style.maxHeight = content.scrollHeight + "px";
         content.classList.add('open');
         icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
       }
