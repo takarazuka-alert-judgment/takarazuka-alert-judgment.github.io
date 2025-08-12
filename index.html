@@ -5,20 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>宝塚小学校 登校判断アプリ</title>
   <style>
+    /* 全体のボックスサイズをborder-boxにしてサイズ計算を安定化 */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f1f6f9;
+      background-color: #fff;
       margin: 0;
-      padding: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-top: 20px;
+      padding-bottom: 20px;
     }
     .card {
-      width: 90%;
-      max-width: 500px;
+      max-width: 700px;
       margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       padding: 24px;
+      background: white;
+      border-radius: 0;
+      box-shadow: none;
+      width: 100%;
     }
     h1 {
       text-align: center;
@@ -55,17 +65,37 @@
       color: #333;
       font-size: 1rem;
     }
-    .rules {
-      background-color: #e8f7ff;
-      padding: 12px;
+    /* アコーディオン */
+    .accordion {
+      margin-top: 16px;
       border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #cce7ff;
+    }
+    .accordion-header {
+      background-color: #e8f7ff;
+      color: #1677c1;
+      cursor: pointer;
+      padding: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .accordion-header i {
+      margin-right: 6px;
+    }
+    .accordion-content {
+      background-color: #f9fdff;
+      padding: 0 12px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
       font-size: 0.85rem;
       color: #444;
-      margin-top: 16px;
     }
-    .rules i {
-      margin-right: 6px;
-      color: #1677c1;
+    .accordion-content.open {
+      padding: 12px;
     }
     .reload {
       margin-top: 20px;
@@ -96,13 +126,15 @@
       text-decoration: none;
       margin: 0 10px;
     }
-
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 680px) {
       body {
-        padding: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
       }
       .card {
-        width: 95%;
+        width: 100%;
         padding: 16px;
       }
       h1 {
@@ -116,9 +148,8 @@
         font-size: 1.4rem;
         width: 24px;
       }
-      .rules {
+      .accordion-content {
         font-size: 0.9rem;
-        padding: 10px;
       }
       .reload button {
         font-size: 1.1rem;
@@ -141,7 +172,7 @@
 <body>
   <div class="card">
     <h1>宝塚小学校 登校判断</h1>
-    <div class="datetime" id="datetime">2025/07/26 07:00 時点</div>
+    <div class="datetime" id="datetime">0000/00/00 00:00 時点</div>
 
     <div class="row">
       <i class="fas fa-exclamation-triangle"></i>
@@ -154,23 +185,34 @@
       <span id="judgment">読み込み中...</span>
     </div>
     <div class="row">
+      <i class="fas fa-comment-dots"></i>
+      <label>理由</label>
+      <span id="reason">読み込み中...</span>
+    </div>
+    <div class="row">
       <i class="fas fa-utensils"></i>
       <label>給食</label>
       <span id="lunch">読み込み中...</span>
     </div>
     <div class="row">
-      <i class="fas fa-comment-dots"></i>
+      <i class="fas fa-file-alt"></i>
       <label>備考</label>
       <span id="remark">読み込み中...</span>
     </div>
 
-    <div class="rules">
-      <i class="fas fa-info-circle"></i><strong>登校判断ルール</strong><br>
-      ・7:00時点で警報 → 自宅待機（給食なし）<br>
-      ・7:00時点で解除 → 集団登校（給食あり・遅刻扱いなし）<br>
-      ・7:00〜9:00に解除 → 集団登校（給食なし・12時下校・遅刻扱いなし）<br>
-      ・9:00時点でも継続 → 臨時休校<br>
-      ・登校中（7:30〜8:30ごろ）に発令 → 自宅付近なら待機、それ以外は登校
+    <!-- アコーディオン -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion()">
+        <div><i class="fas fa-info-circle"></i>登校判断ルール</div>
+        <i id="accordion-icon" class="fas fa-chevron-down"></i>
+      </div>
+      <div id="accordion-content" class="accordion-content">
+        <b>・7:00時点で警報が発令中</b><br>　→ 自宅待機（給食なし）<br>
+        <b>・7:00時点で警報が解除済</b><br>　→ 集団登校（給食あり・遅刻扱いなし）<br>
+        <b>・9:00時点でも警報が継続</b><br>　→ 臨時休校<br>
+        <b>・7:00〜9:00に警報が解除済</b><br>　→ 集団登校（給食なし・12時下校・遅刻扱いなし）<br>
+        <b>・登校中（7:30〜8:30ごろ）に警報が発令</b><br>　→ 自宅付近なら待機、それ以外は登校
+      </div>
     </div>
 
     <div class="reload">
@@ -183,63 +225,68 @@
     </div>
 
     <div class="footer-remark">
-      ※ 夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。<br>
-      ※ 本システムは参考情報を提供するものであり、最終判断は各ご家庭でお願いします。
+      ※ 本システムは参考情報を提供するものであり、最終判断は各ご家庭でお願いします。夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。
     </div>
   </div>
 
   <script>
     function updateUI(data) {
-      console.log('updateUI called with:', data);
-  
       if (!data || (!data.alert && !data.judgment)) {
         document.getElementById('datetime').innerText = '本日のデータなし';
         document.getElementById('alerts').innerText = '－';
         document.getElementById('judgment').innerText = '－';
+        document.getElementById('reason').innerText = '－';
         document.getElementById('lunch').innerText = '－';
         document.getElementById('remark').innerText = '－';
         return;
       }
-  
       document.getElementById('datetime').innerText = data.datetime || '不明な日時';
       document.getElementById('alerts').innerText = data.alert ? data.alert.types : '－';
-  
       if (data.judgment) {
         document.getElementById('judgment').innerText = data.judgment.judgment;
+        document.getElementById('reason').innerText = data.judgment.reason;
         document.getElementById('lunch').innerText = data.judgment.lunch;
         document.getElementById('remark').innerText = data.judgment.remark;
       } else {
         document.getElementById('judgment').innerText = '－';
+        document.getElementById('reason').innerText = '－';
         document.getElementById('lunch').innerText = '－';
         document.getElementById('remark').innerText = '－';
       }
     }
-  
     function jsonpCallback(data) {
-      console.log('JSONP callback data:', data);
       updateUI(data);
     }
-  
     function reloadData() {
       document.getElementById('datetime').innerText = '読み込み中...';
       document.getElementById('alerts').innerText = '読み込み中...';
       document.getElementById('judgment').innerText = '読み込み中...';
+      document.getElementById('reason').innerText = '読み込み中...';
       document.getElementById('lunch').innerText = '読み込み中...';
       document.getElementById('remark').innerText = '読み込み中...';
-  
       const apiUrl = "https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=today-data&callback=jsonpCallback";
-  
       const oldScript = document.getElementById('jsonpScript');
       if (oldScript) oldScript.remove();
-  
       const script = document.createElement('script');
       script.src = apiUrl;
       script.id = 'jsonpScript';
       document.body.appendChild(script);
     }
-  
     window.onload = reloadData;
-  </script>
 
+    function toggleAccordion() {
+      const content = document.getElementById('accordion-content');
+      const icon = document.getElementById('accordion-icon');
+      if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        content.classList.remove('open');
+        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+      } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+        content.classList.add('open');
+        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+      }
+    }
+  </script>
 </body>
 </html>
