@@ -4,10 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>宝塚小学校 登校判断アプリ</title>
+  <meta name="description" content="宝塚小学校の登校判断を簡単に確認できるWebアプリ。警報発令中かどうか、登校の可否や理由、給食情報などを表示します。" />
+  <meta name="keywords" content="宝塚小学校, 登校判断, 警報, 給食, 学校, 天気" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- OGP / SNSプレビュー用 -->
+  <meta property="og:title" content="宝塚小学校 登校判断アプリ" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://takarazuka-alert-judgment.github.io" />
+  <meta property="og:description" content="宝塚小学校の登校判断を簡単に確認できるWebアプリです。警報発令中かどうか、登校の可否や理由、給食情報などを表示します。" />
+  <meta property="og:site_name" content="宝塚小学校 登校判断アプリ" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
   <style>
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
       box-sizing: border-box;
     }
 
@@ -15,14 +26,14 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #fff;
       margin: 0;
-      padding: 5px 10px 70px; /* 上部5px・下部70pxは固定 */
+      padding: 5px 10px 70px;
     }
 
     .card {
       max-width: 700px;
       margin: 0 auto;
       padding: 20px;
-      background: white;
+      background: #fff;
       border-radius: 0;
       box-shadow: none;
       width: 100%;
@@ -31,7 +42,7 @@
     h1 {
       text-align: center;
       color: #1677c1;
-      margin-top: 8px;    /* 追加 */
+      margin-top: 8px;
       margin-bottom: 8px;
     }
 
@@ -70,7 +81,6 @@
       font-size: 1rem;
     }
 
-    /* アコーディオン */
     .accordion {
       margin-top: 16px;
       border-radius: 10px;
@@ -112,7 +122,6 @@
       text-align: left;
     }
 
-    /* 下部固定ナビ */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -121,7 +130,7 @@
       width: 100%;
       max-width: 700px;
       background: #1677c1;
-      border-radius: 0; /* 角丸をなくす */
+      border-radius: 0;
       display: flex;
       justify-content: space-around;
       align-items: center;
@@ -130,6 +139,7 @@
       z-index: 1000;
       border-top: none;
     }
+
     .bottom-nav a {
       color: #fff;
       text-decoration: none;
@@ -141,52 +151,58 @@
       user-select: none;
       transition: color 0.2s ease;
     }
+
     .bottom-nav a:hover {
       color: #a9d1ff;
     }
+
     .bottom-nav a span {
-      font-size: 0.65rem; /* 小さく */
+      font-size: 0.65rem;
       margin-top: 4px;
     }
+
     .bottom-nav a.line-icon {
       color: #fff;
     }
 
     @media screen and (max-width: 680px) {
       body {
-        padding: 5px 10px 70px; /* モバイルも上部5pxに */
+        padding: 5px 10px 70px;
       }
+
       .card {
         width: 100%;
         padding: 14px;
       }
+
       h1 {
         font-size: 1.6rem;
       }
+
       .row label,
       .row span {
         font-size: 1.1rem;
       }
+
       .row i {
         font-size: 1.4rem;
         width: 24px;
       }
+
       .accordion-content {
         font-size: 0.9rem;
       }
+
       .bottom-nav a {
         font-size: 22px;
         width: 50px;
       }
+
       .bottom-nav a span {
-        font-size: 0.6rem; /* モバイルではさらに小さく */
+        font-size: 0.6rem;
       }
     }
   </style>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  />
 </head>
 <body>
   <div class="card">
@@ -219,7 +235,6 @@
       <span id="remark">読み込み中...</span>
     </div>
 
-    <!-- アコーディオン -->
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion()">
         <div><i class="fas fa-info-circle"></i>登校判断ルール</div>
@@ -235,11 +250,10 @@
     </div>
 
     <div class="footer-remark">
-      ※ 本システムは参考情報を提供するものであり、最終判断は各ご家庭でお願いします。夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。
+      ※ 本システムは参考情報として有志が作成したものであり、最終判断は各ご家庭の責任で行ってください。学校や自治体の公式情報ではありません。夏休みなどの長期休暇中や祝日も通知や登校判断が行われる場合があります。
     </div>
   </div>
 
-  <!-- 下部固定ナビ -->
   <nav class="bottom-nav" aria-label="ページ下部ナビゲーション">
     <a href="javascript:reloadData()" title="ホーム">
       <i class="fas fa-home"></i>
@@ -312,10 +326,10 @@
       const icon = document.getElementById('accordion-icon');
       if (content.classList.contains('open')) {
         content.classList.remove('open');
-        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+        icon.classList.replace('fa-chevron-up','fa-chevron-down');
       } else {
         content.classList.add('open');
-        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        icon.classList.replace('fa-chevron-down','fa-chevron-up');
       }
     }
   </script>
