@@ -18,7 +18,7 @@
     max-width: 700px;
     width: 100%;
     margin: 0 auto;
-    padding: 20px 0; /* ←左右paddingを0に */
+    padding: 20px 0;
   }
   h1 {
     text-align: center;
@@ -32,6 +32,10 @@
     font-weight: normal;
     display: block;
     margin-top: 4px;
+  }
+  .table-wrapper {
+    max-height: calc(100vh - 180px); /* ヘッダー・h1・下ナビの高さを引く */
+    overflow-y: auto;
   }
   table {
     width: 100%;
@@ -47,6 +51,9 @@
   th {
     background-color: #e8f4fc;
     color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   tr:hover {
     background-color: #f5fbff;
@@ -91,7 +98,7 @@
   }
   @media screen and (max-width: 680px) {
     .container {
-      padding: 14px 0; /* モバイルも左右0に */
+      padding: 14px 0;
     }
     h1 {
       font-size: 1.6rem;
@@ -115,19 +122,21 @@
 <body>
   <div class="container">
     <h1>警報の履歴<br /><small>（過去14日間）</small></h1>
-    <table>
-      <thead>
-        <tr>
-          <th>日付</th>
-          <th>時刻</th>
-          <th>発令状況</th>
-          <th>警報の種類</th>
-        </tr>
-      </thead>
-      <tbody id="alert-log">
-        <tr><td colspan="4">読み込み中...</td></tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th>時刻</th>
+            <th>発令状況</th>
+            <th>警報の種類</th>
+          </tr>
+        </thead>
+        <tbody id="alert-log">
+          <tr><td colspan="4">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <nav class="bottom-nav" aria-label="ページ下部ナビゲーション">
@@ -174,29 +183,19 @@
       data.forEach(row => {
         const tr = document.createElement('tr');
 
-        // 年を消して、"-"か"/"区切りの日付に対応して「MM/DD」表示にする
         let displayDate = '－';
         if (row.date) {
           if (row.date.includes('-')) {
             const parts = row.date.split('-');
-            if (parts.length === 3) {
-              displayDate = parts[1] + '/' + parts[2];
-            } else {
-              displayDate = row.date;
-            }
+            if (parts.length === 3) displayDate = parts[1] + '/' + parts[2];
+            else displayDate = row.date;
           } else if (row.date.includes('/')) {
             const parts = row.date.split('/');
-            if (parts.length === 3) {
-              displayDate = parts[1] + '/' + parts[2];
-            } else {
-              displayDate = row.date;
-            }
-          } else {
-            displayDate = row.date;
-          }
+            if (parts.length === 3) displayDate = parts[1] + '/' + parts[2];
+            else displayDate = row.date;
+          } else displayDate = row.date;
         }
 
-        // カンマを改行に変換
         let typesText = '－';
         if (row.types) {
           const typesArr = row.types.split(',');
@@ -209,17 +208,14 @@
           <td>${row.status || '－'}</td>
           <td>${typesText}</td>
         `;
-
         tbody.appendChild(tr);
       });
     }
 
     function loadAlertLog() {
       const apiUrl = 'https://script.google.com/macros/s/AKfycby1p3Mof7PFalZmzISlNjDG4iRQgVkFMcAacn229jtO09_a3zgM0eWAUT3n5wRsHKparQ/exec?page=alert-log&callback=jsonpCallback';
-
       const oldScript = document.getElementById('jsonpScript');
       if (oldScript) oldScript.remove();
-
       const script = document.createElement('script');
       script.src = apiUrl;
       script.id = 'jsonpScript';
